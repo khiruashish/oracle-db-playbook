@@ -58,6 +58,9 @@ This runs the result checks, the formatting check and `mkdocs build --strict`
 (which fails on broken links or missing navigation targets). Output goes to
 `site/`.
 
+The same script runs in GitHub Actions on every pull request and on pushes to
+`main` (`.github/workflows/docs.yml`), and uploads the built site as an artifact.
+
 ## Install the FreshMart sample database
 
 Needs an Oracle database (19c or later) and SQLcl or SQL*Plus. Full
