@@ -7,6 +7,20 @@ tags: [stage-1, sql, joins, aggregation]
 !!! abstract "Chapter card"
     **Stage:** 1 · **Prerequisites:** 1.5, 1.6 · **Time:** 4 hours · **Applies to:** 19c+
 
+## At a glance
+
+Joins recombine facts that normalization separated; aggregates summarize many rows into totals.
+
+| Subtopic | In one line |
+|---|---|
+| INNER JOIN | Matching pairs only |
+| LEFT OUTER JOIN | Keep unmatched rows of one side |
+| ON versus WHERE | Where a filter goes changes an outer join |
+| GROUP BY and aggregates | One result row per group |
+| HAVING | Filter groups |
+| The fan-out trap | Why totals inflate when joining two child tables |
+| Join methods | Nested loops, hash, sort-merge: a first look |
+
 ## 1. Overview
 
 Normalization splits facts across tables. A **join** puts them back together for
@@ -263,6 +277,39 @@ You do not choose the method; you provide good statistics and indexes
 | Joining two child tables then summing | Inflated totals (fan-out) |
 | Selecting a non-grouped column | `ORA-00979` |
 | Using `DISTINCT` to remove duplicates created by a join | Hides a wrong join and costs a sort |
+
+## FreshMart example
+
+=== "Scenario"
+
+    The operations head wants one line per warehouse: number of orders and revenue, ignoring cancelled orders, busiest first.
+
+=== "SQL"
+
+    ```sql
+    SELECT w.warehouse_name,
+           COUNT(o.order_id)             AS orders,
+           NVL(SUM(o.total_amount), 0)   AS revenue
+    FROM   warehouses w
+    LEFT   JOIN orders o ON o.warehouse_id = w.warehouse_id
+                        AND o.status <> 'CANCELLED'
+    GROUP  BY w.warehouse_name
+    ORDER  BY revenue DESC;
+    ```
+
+=== "Result"
+
+    | WAREHOUSE_NAME | ORDERS | REVENUE |
+    |---|---:|---:|
+    | Mumbai Central FC | 4 | 2192 |
+    | Bengaluru South FC | 2 | 1140 |
+    | Delhi NCR FC | 1 | 356 |
+
+    Derived from the sample data (totals match the verified net order total of 3688).
+
+=== "Takeaway"
+
+    The status filter sits in the `ON` clause so that a warehouse with only cancelled orders would still appear with zero. In `WHERE` it would silently drop that warehouse.
 
 ## 9. Check yourself
 

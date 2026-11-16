@@ -7,6 +7,19 @@ tags: [stage-1, fundamentals, theory]
 !!! abstract "Chapter card"
     **Stage:** 1 · **Prerequisites:** 1.1 · **Time:** 3 hours · **Applies to:** theory; independent of release
 
+## At a glance
+
+The relational model presents all data as tables related by values, and defines a small algebra that every SQL query is built from.
+
+| Subtopic | In one line |
+|---|---|
+| Relations, tuples, attributes, domains | The theory names for tables, rows, columns, types |
+| Keys | Super, candidate, primary, alternate, composite, natural, surrogate, foreign |
+| Integrity rules | Entity integrity and referential integrity |
+| Relational algebra | Selection, projection, join, union, difference, division |
+| Relational calculus | Describing the result instead of the steps |
+| Where SQL departs from theory | Duplicates, NULL, ordering, empty strings |
+
 ## 1. Overview
 
 In 1970 E. F. Codd proposed that all data be presented as **relations**: sets of
@@ -91,7 +104,7 @@ why two differently written queries can run the same way.
 
 *"Names of customers in Mumbai."*
 
-Algebra: π~customer_name~ ( σ~city = 'Mumbai'~ ( customers ) )
+Algebra: π<sub>customer_name</sub> ( σ<sub>city = 'Mumbai'</sub> ( customers ) )
 
 ```sql
 SELECT customer_name
@@ -122,7 +135,7 @@ Five rows are returned: everyone except Neha Gupta (106).
 
 Because selection and join commute, the optimizer may filter before joining:
 
-σ~city='Mumbai'~ (customers ⋈ orders) ≡ (σ~city='Mumbai'~ customers) ⋈ orders
+σ<sub>city='Mumbai'</sub> (customers ⋈ orders) ≡ (σ<sub>city='Mumbai'</sub> customers) ⋈ orders
 
 Filtering 6 customers down to 3 *before* the join is cheaper than joining first.
 This rewrite is called **predicate pushdown**; you will see it in plans in
@@ -159,6 +172,36 @@ complete**.
 - Believing rows come back "in insert order".
 - Using a join when the question is a semijoin, which multiplies rows and then needs `DISTINCT` to hide the mistake.
 
+## FreshMart example
+
+=== "Scenario"
+
+    A new developer asks how order lines "know" their product, since there are no pointers. Show that the link is nothing more than matching key values.
+
+=== "SQL"
+
+    ```sql
+    SELECT oi.order_id, oi.line_no, oi.product_id AS fk_value,
+           p.product_id AS pk_value, p.product_name
+    FROM   order_items oi
+    JOIN   products p ON p.product_id = oi.product_id
+    WHERE  oi.order_id = 1002
+    ORDER  BY oi.line_no;
+    ```
+
+=== "Result"
+
+    | ORDER_ID | LINE_NO | FK_VALUE | PK_VALUE | PRODUCT_NAME |
+    |---:|---:|---:|---:|---|
+    | 1002 | 1 | 11 | 11 | Basmati Rice 5kg |
+    | 1002 | 2 | 10 | 10 | Assam Tea 250g |
+
+    Derived from the sample data.
+
+=== "Takeaway"
+
+    `order_items (order_id, line_no)` is a composite primary key; `product_id` is a foreign key whose value equals a primary key value in `products`. Because relationships are values, any two tables can be joined on any comparable columns, whether or not the designer anticipated the question.
+
 ## 8. Check yourself
 
 ??? question "Interview questions"
@@ -182,7 +225,7 @@ complete**.
 ??? example "Exercises"
     1. List all candidate keys of `coupons`. *`coupon_id` and `coupon_code`.*
     2. Write algebra and SQL for "SKUs of products priced above 100".
-       *π~sku~(σ~unit_price>100~(products)); `SELECT sku FROM products WHERE unit_price > 100;` returns 5 rows.*
+       *π<sub>sku</sub>(σ<sub>unit_price>100</sub>(products)); `SELECT sku FROM products WHERE unit_price > 100;` returns 5 rows.*
     3. Which FreshMart tables have a composite primary key? *`inventory`, `cart_items`, `order_items`.*
 
 ## 9. Related

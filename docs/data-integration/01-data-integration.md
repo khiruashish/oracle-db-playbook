@@ -132,7 +132,7 @@ Every pipeline needs proof, not hope.
 | Row counts per batch and per table | Source 1,204,551 = target 1,204,551 |
 | Control totals | `SUM(total_amount)` by day |
 | Key completeness | Anti-joins both ways |
-| Content hash | `SUM(ORA_HASH(col1 || '|' || col2 ...))` per key range or partition; drill into ranges that differ |
+| Content hash | A sum of `ORA_HASH` over the concatenated columns (query below) per key range or partition; drill into ranges that differ |
 | Referential checks in the target | Facts without dimensions |
 | Business rules | No negative stock; totals equal lines |
 | Freshness | `MAX(loaded_at)` within the SLA |

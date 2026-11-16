@@ -7,6 +7,21 @@ tags: [stage-1, sql, functions]
 !!! abstract "Chapter card"
     **Stage:** 1 · **Prerequisites:** 1.5 · **Time:** 3 hours · **Applies to:** 19c+
 
+## At a glance
+
+`NULL` means unknown, and functions turn stored values into the form a report or screen needs.
+
+| Subtopic | In one line |
+|---|---|
+| NULL and three-valued logic | Why `= NULL` is never true |
+| NULL functions | COALESCE, NVL, NVL2, NULLIF, DECODE |
+| CASE | If-then-else as an expression |
+| Character functions | UPPER, SUBSTR, INSTR, REPLACE, LPAD, regular expressions |
+| Numeric functions | ROUND, TRUNC, MOD, CEIL, FLOOR |
+| Date and time | SYSDATE, date arithmetic, TRUNC, ADD_MONTHS, intervals |
+| Conversion | TO_CHAR, TO_DATE, TO_NUMBER, CAST and implicit conversion |
+| Aggregates | COUNT, SUM, AVG, MIN, MAX |
+
 ## 1. NULL: the absence of a value
 
 `NULL` means "unknown or not applicable". It is not zero and not a space.
@@ -22,7 +37,7 @@ keeps only rows where the condition is **true**.
 | `NULL = NULL` | unknown |
 | `NULL <> 5` | unknown |
 | `5 + NULL` | `NULL` |
-| `'A' || NULL` | `'A'` (Oracle concatenation ignores null) |
+| `'A' \|\| NULL` | `'A'` (Oracle concatenation ignores null) |
 | `TRUE AND unknown` | unknown |
 | `FALSE AND unknown` | false |
 | `TRUE OR unknown` | true |
@@ -124,7 +139,7 @@ an unmatched row yields `NULL`. The *simple* form compares one expression:
 | `REPLACE(s, '1kg', '2kg')` | `Apple Royal Gala 2kg` |
 | `TRIM(s)`, `LTRIM`, `RTRIM` | Removes surrounding spaces |
 | `LPAD('7', 3, '0')` | `007` |
-| `s || ' (fruit)'` or `CONCAT(a, b)` | Concatenation |
+| `s \|\| ' (fruit)'` or `CONCAT(a, b)` | Concatenation |
 | `REGEXP_LIKE(s, '^[A-Z]')` | True if it starts with a capital |
 | `REGEXP_SUBSTR(sku, '[^-]+', 1, 2)` | Second dash-separated part of the SKU: `APL` |
 
@@ -224,6 +239,39 @@ Grouping is covered in [1.10](06-joins-and-aggregates.md).
 - Prefer `COALESCE` and `CASE` (standard, short-circuit) over `NVL` and `DECODE` in new code.
 - Store timestamps in UTC or use `TIMESTAMP WITH TIME ZONE`; never store local times without knowing the zone.
 - Calling a PL/SQL function from SQL for every row is far slower than a built-in.
+
+## FreshMart example
+
+=== "Scenario"
+
+    The order confirmation email needs, for each April order: a formatted date, whether a coupon was used, and the delivery charge shown as "FREE" when it is zero.
+
+=== "SQL"
+
+    ```sql
+    SELECT order_id,
+           TO_CHAR(order_date, 'DD Mon YYYY')                 AS ordered_on,
+           NVL2(coupon_id, 'Coupon applied', 'No coupon')     AS coupon,
+           CASE WHEN delivery_fee = 0 THEN 'FREE'
+                ELSE TO_CHAR(delivery_fee) END                AS delivery
+    FROM   orders
+    WHERE  order_date >= DATE '2025-04-01'
+    ORDER  BY order_id;
+    ```
+
+=== "Result"
+
+    | ORDER_ID | ORDERED_ON | COUPON | DELIVERY |
+    |---:|---|---|---|
+    | 1006 | 02 Apr 2025 | No coupon | 30 |
+    | 1007 | 05 Apr 2025 | Coupon applied | FREE |
+    | 1008 | 08 Apr 2025 | No coupon | 30 |
+
+    Derived from the sample data (month names assume an English session language).
+
+=== "Takeaway"
+
+    `TO_CHAR` with an explicit format removes the dependence on session settings; `NVL2` turns "is there a value?" into text; `CASE` must return one data type, hence `TO_CHAR(delivery_fee)`.
 
 ## 9. Check yourself
 

@@ -7,6 +7,19 @@ tags: [stage-1, data-modeling, normalization]
 !!! abstract "Chapter card"
     **Stage:** 1 (1NF to 3NF) and 2 (BCNF to 5NF) · **Prerequisites:** 1.3 · **Time:** 3 hours
 
+## At a glance
+
+Normalization splits tables until every fact is stored exactly once.
+
+| Subtopic | In one line |
+|---|---|
+| Anomalies | Update, insert and delete problems of redundant data |
+| Functional dependencies | Which columns determine which |
+| 1NF, 2NF, 3NF | Atomic values; whole key; nothing but the key |
+| BCNF, 4NF, 5NF | Overlapping keys; multivalued facts; join dependencies |
+| Denormalization | Deliberate, guarded redundancy for read speed |
+| Star and snowflake schemas | Dimensional designs for analytics |
+
 ## 1. Overview
 
 **Normalization** is a method for splitting tables so that every fact is stored
@@ -194,6 +207,33 @@ columns.
 - Denormalizing **before measuring**. Oracle joins millions of rows per second on indexed keys.
 - Storing a derived total with **nothing enforcing** it.
 - Believing normalization is about saving disk space. It is about correctness.
+
+## FreshMart example
+
+=== "Scenario"
+
+    `orders.subtotal` duplicates information held in `order_items`. That is a deliberate denormalization. An auditor asks for proof that the copy has not drifted from the lines.
+
+=== "SQL"
+
+    ```sql
+    SELECT o.order_id, o.subtotal, s.lines_total
+    FROM   orders o
+    JOIN  (SELECT order_id, SUM(line_total) AS lines_total
+           FROM   order_items GROUP BY order_id) s ON s.order_id = o.order_id
+    WHERE  o.subtotal <> s.lines_total;
+    ```
+
+=== "Result"
+
+    No rows selected.
+
+    *Verified*: for all 8 orders the stored subtotal equals the sum of the lines
+    (for example order 1001: 360 + 204 + 45 = 609).
+
+=== "Takeaway"
+
+    Redundancy is acceptable when something guarantees it: here one write path (`order_pkg`), a check constraint on the total, and this reconciliation query. Redundancy with no guard is an anomaly waiting to happen.
 
 ## 8. Check yourself
 

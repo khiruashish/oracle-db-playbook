@@ -7,6 +7,19 @@ tags: [stage-2, sql, subqueries]
 !!! abstract "Chapter card"
     **Stage:** 2 · **Prerequisites:** 2.1 · **Time:** 3 hours · **Applies to:** 19c+
 
+## At a glance
+
+A subquery is a query inside a statement; set operators combine the results of whole queries.
+
+| Subtopic | In one line |
+|---|---|
+| Scalar, row, multi-row subqueries | One value, one row, many rows |
+| ANY and ALL | Comparing with a set |
+| Correlated subqueries | Depend on the outer row; usually unnested |
+| Inline views | A subquery as a table |
+| UNION, UNION ALL, INTERSECT, MINUS | Combining result sets |
+| Choosing a form | EXISTS, joins, window functions, CTEs |
+
 ## 1. Kinds of subquery
 
 | Kind | Returns | Where it goes |
@@ -215,6 +228,44 @@ WHERE  rk = 1;
 - `UNION` where `UNION ALL` is correct and cheaper.
 - A correlated subquery that references the wrong alias and silently becomes uncorrelated. Always qualify columns.
 - `ORDER BY` inside a subquery expecting it to order the outer result.
+
+## FreshMart example
+
+=== "Scenario"
+
+    Marketing wants to promote dairy to customers who buy staples (rice, flour) but have never bought anything from Dairy and Eggs.
+
+=== "SQL"
+
+    ```sql
+    SELECT c.customer_id, c.customer_name
+    FROM   customers c
+    WHERE  EXISTS (SELECT 1
+                   FROM   orders o
+                   JOIN   order_items oi ON oi.order_id  = o.order_id
+                   JOIN   products p     ON p.product_id = oi.product_id
+                   WHERE  o.customer_id = c.customer_id
+                   AND    o.status <> 'CANCELLED' AND p.category_id = 7)
+    AND    NOT EXISTS (SELECT 1
+                   FROM   orders o
+                   JOIN   order_items oi ON oi.order_id  = o.order_id
+                   JOIN   products p     ON p.product_id = oi.product_id
+                   WHERE  o.customer_id = c.customer_id
+                   AND    o.status <> 'CANCELLED' AND p.category_id = 4);
+    ```
+
+=== "Result"
+
+    | CUSTOMER_ID | CUSTOMER_NAME |
+    |---:|---|
+    | 102 | Priya Nair |
+
+    Derived from the sample data: staples were bought by 101 and 102; dairy by
+    101, 103 and 105.
+
+=== "Takeaway"
+
+    One semi join and one anti join state the business sentence directly, return each customer once, and are safe with nulls. The same question as two set queries: staples buyers `MINUS` dairy buyers.
 
 ## 8. Check yourself
 

@@ -7,6 +7,21 @@ tags: [stage-2, sql, joins]
 !!! abstract "Chapter card"
     **Stage:** 2 · **Prerequisites:** 1.10 · **Time:** 3 hours · **Applies to:** 19c+
 
+## At a glance
+
+Beyond inner and left joins: every way two row sets can be combined, and what each is for.
+
+| Subtopic | In one line |
+|---|---|
+| FULL OUTER JOIN | Unmatched rows from both sides |
+| Self join | A table joined to itself |
+| CROSS JOIN | Every combination, on purpose |
+| NATURAL and USING | Shorthand, and why NATURAL is avoided |
+| Semi and anti joins | EXISTS and NOT EXISTS |
+| LATERAL / APPLY | A join whose right side depends on the left row |
+| Non-equi joins | Ranges |
+| Partitioned outer join | Filling gaps in reports |
+
 ## 1. The complete join family
 
 | Join | Returns | Standard? |
@@ -245,6 +260,39 @@ ORDER  BY 1, 2;
 - Outer join followed by an inner join to a third table through the optional side: the outer join is cancelled.
 - Join + `DISTINCT` where a semi join was meant.
 - Joining on expressions (`TRUNC(a.dt) = TRUNC(b.dt)`) with no supporting index.
+
+## FreshMart example
+
+=== "Scenario"
+
+    The delivery dashboard lists every April order with its shipment and the associate who delivered it. Orders not yet shipped, and shipments by outside carriers, must still appear.
+
+=== "SQL"
+
+    ```sql
+    SELECT o.order_id, o.status AS order_status,
+           s.carrier, s.status AS shipment_status,
+           e.employee_name AS delivered_by
+    FROM   orders o
+    LEFT   JOIN shipments s ON s.order_id    = o.order_id
+    LEFT   JOIN employees e ON e.employee_id = s.delivered_by
+    WHERE  o.order_date >= DATE '2025-04-01'
+    ORDER  BY o.order_id;
+    ```
+
+=== "Result"
+
+    | ORDER_ID | ORDER_STATUS | CARRIER | SHIPMENT_STATUS | DELIVERED_BY |
+    |---:|---|---|---|---|
+    | 1006 | DELIVERED | QuickShip | DELIVERED | *(null)* |
+    | 1007 | PLACED | *(null)* | *(null)* | *(null)* |
+    | 1008 | DELIVERED | FreshMart Fleet | DELIVERED | Fatima Khan |
+
+    Derived from the sample data.
+
+=== "Takeaway"
+
+    Two chained left joins keep the order row at every step. If the second join were an inner join, orders 1006 and 1007 would vanish: an inner join after an outer join cancels the outer join.
 
 ## 12. Check yourself
 

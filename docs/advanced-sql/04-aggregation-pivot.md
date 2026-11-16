@@ -7,6 +7,20 @@ tags: [stage-2, sql, aggregation]
 !!! abstract "Chapter card"
     **Stage:** 2 · **Prerequisites:** 1.10 · **Time:** 3 hours · **Applies to:** 19c+
 
+## At a glance
+
+Grouping extensions produce subtotals and cross-tabulations in a single pass over the data.
+
+| Subtopic | In one line |
+|---|---|
+| ROLLUP | Hierarchical subtotals and a grand total |
+| CUBE | Subtotals for every combination |
+| GROUPING SETS | Exactly the groupings you list |
+| PIVOT and UNPIVOT | Rows to columns and back |
+| LISTAGG | Concatenate values per group |
+| KEEP (DENSE_RANK FIRST/LAST) | The value belonging to the top-ranked row |
+| Other aggregates | Approximate counts, percentiles, ANY_VALUE |
+
 All results in this chapter use non-cancelled orders. Base figures (verified):
 
 | Warehouse | March 2025 | April 2025 | Total |
@@ -58,7 +72,7 @@ SELECT CASE GROUPING(warehouse_id) WHEN 1 THEN 'ALL' ELSE TO_CHAR(warehouse_id) 
 
 `CUBE(a, b)` groups by `(a, b)`, `(a)`, `(b)` and `()`. It adds the per-month
 totals that `ROLLUP` did not produce: 2025-03 → 2139, 2025-04 → 1549. With `n`
-columns `CUBE` produces 2^n^ groupings, so keep `n` small.
+columns `CUBE` produces 2<sup>n</sup> groupings, so keep `n` small.
 
 ## 3. GROUPING SETS: exactly the groupings you want
 
@@ -219,6 +233,40 @@ ORDER  BY category_id;
 - `LISTAGG` overflow in production because test data was small.
 - `COUNT(DISTINCT)` on several columns in one query forcing multiple sorts on very large sets.
 - Filtering in `HAVING` what belongs in `WHERE`.
+
+## FreshMart example
+
+=== "Scenario"
+
+    Finance reconciles money received with the payment gateway: successful payments per method, with a total line, in one query.
+
+=== "SQL"
+
+    ```sql
+    SELECT CASE GROUPING(payment_method) WHEN 1 THEN 'TOTAL' ELSE payment_method END AS method,
+           COUNT(*)    AS payments,
+           SUM(amount) AS amount
+    FROM   payments
+    WHERE  status = 'SUCCESS'
+    GROUP  BY ROLLUP (payment_method)
+    ORDER  BY GROUPING(payment_method), amount DESC;
+    ```
+
+=== "Result"
+
+    | METHOD | PAYMENTS | AMOUNT |
+    |---|---:|---:|
+    | CARD | 2 | 1456 |
+    | UPI | 2 | 1063 |
+    | WALLET | 1 | 420 |
+    | NETBANKING | 1 | 393 |
+    | TOTAL | 6 | 3332 |
+
+    Per-method figures *verified*; the total is their sum.
+
+=== "Takeaway"
+
+    `ROLLUP` adds the total row and `GROUPING()` labels it reliably. 3332 differs from the net order total (3688) by exactly order 1004 (356, cash on delivery, still pending): a reconciliation finding, not an error.
 
 ## 10. Check yourself
 

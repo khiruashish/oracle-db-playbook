@@ -7,6 +7,20 @@ tags: [stage-1, fundamentals]
 !!! abstract "Chapter card"
     **Stage:** 1 · **Prerequisites:** none · **Time:** 2 hours · **Applies to:** all releases
 
+## At a glance
+
+A database stores facts so that many people can find, change and trust them at the same time.
+
+| Subtopic | In one line |
+|---|---|
+| Data and information | Raw facts versus facts in context |
+| Why databases exist | What files and spreadsheets cannot guarantee |
+| DBMS and RDBMS | The software, and the relational kind |
+| Data independence | Change storage without changing SQL |
+| Types of database | Relational, document, key-value, graph, column, vector |
+| OLTP and OLAP | Transactions versus analytics |
+| Vocabulary | Table, row, column, key, schema, data dictionary, instance |
+
 ## 1. Overview
 
 **Data** is a recorded fact: `180`, `Apple`, `2025-03-01`. On its own a fact
@@ -139,6 +153,34 @@ Illustrative output of the second query (first rows):
 - **Confusing the database with the DBMS.** Oracle Database is the software; your database is the data it manages.
 - **Treating a spreadsheet habit as a design.** Columns like `product1`, `product2`, `product3` are the first thing normalization removes (chapter [1.4](../data-modeling/02-normalization.md)).
 - **Assuming a schema is the same in every DBMS.** In Oracle a schema equals a user; in PostgreSQL and SQL Server it is a namespace inside a database.
+
+## FreshMart example
+
+=== "Scenario"
+
+    FreshMart's founder kept orders in a spreadsheet. Before trusting the new database, she asks one question: "What does this database actually contain?" The database can answer about itself.
+
+=== "SQL"
+
+    ```sql
+    SELECT (SELECT COUNT(*) FROM user_tables)                                   AS tables,
+           (SELECT COUNT(*) FROM user_constraints WHERE constraint_type = 'R')  AS foreign_keys,
+           (SELECT COUNT(*) FROM customers)                                     AS customers,
+           (SELECT COUNT(*) FROM orders)                                        AS orders
+    FROM   dual;
+    ```
+
+=== "Result"
+
+    | TABLES | FOREIGN_KEYS | CUSTOMERS | ORDERS |
+    |---:|---:|---:|---:|
+    | 20 | 25 | 6 | 8 |
+
+    Derived from the installed schema and sample data.
+
+=== "Takeaway"
+
+    Twenty tables linked by 25 declared relationships replace one wide sheet. The structure itself is data you can query: that is the data dictionary, and it is the first place to look in any unfamiliar database.
 
 ## 7. Check yourself
 

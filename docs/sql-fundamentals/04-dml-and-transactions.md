@@ -7,6 +7,20 @@ tags: [stage-1, sql, dml, transactions]
 !!! abstract "Chapter card"
     **Stage:** 1 · **Prerequisites:** 1.7 · **Time:** 3 hours · **Applies to:** 19c+
 
+## At a glance
+
+DML changes rows, and a transaction groups changes so that they all happen or none do.
+
+| Subtopic | In one line |
+|---|---|
+| INSERT | One row, many rows, RETURNING |
+| UPDATE | Change columns of chosen rows |
+| DELETE | Remove chosen rows |
+| Transactions and ACID | The guarantees |
+| COMMIT, ROLLBACK, SAVEPOINT | Ending or partly undoing a transaction |
+| What ends a transaction | DDL, exit, autocommit |
+| How it works | Undo, redo, and who sees what |
+
 ## 1. Overview
 
 **DML** changes rows: `INSERT` adds, `UPDATE` modifies, `DELETE` removes.
@@ -208,6 +222,47 @@ packaged version of this logic is `order_pkg.place_order`
 - Relying on tool autocommit and losing atomicity.
 - Leaving a session open with an uncommitted change over lunch, blocking others.
 - Treating `ROLLBACK TO SAVEPOINT` as ending the transaction. It does not; locks taken before the savepoint remain.
+
+## FreshMart example
+
+=== "Scenario"
+
+    Amit (customer 103) edits his cart: he raises the apples to 2, removes the tea, changes his mind about the tea, and finally abandons all changes. Follow the cart total through one transaction.
+
+=== "SQL"
+
+    ```sql
+    -- Cart 1 starts with: Apple x1 (180) + Assam Tea x1 (150) = 330
+    UPDATE cart_items SET quantity = 2 WHERE cart_id = 1 AND product_id = 1;
+    SAVEPOINT apples_changed;
+
+    DELETE FROM cart_items WHERE cart_id = 1 AND product_id = 10;
+    ROLLBACK TO SAVEPOINT apples_changed;     -- the tea is back
+
+    ROLLBACK;                                 -- everything is back
+
+    -- Run after each step:
+    SELECT SUM(ci.quantity * p.unit_price) AS cart_total
+    FROM   cart_items ci JOIN products p ON p.product_id = ci.product_id
+    WHERE  ci.cart_id = 1;
+    ```
+
+=== "Result"
+
+    | After | CART_TOTAL |
+    |---|---:|
+    | Start | 330 |
+    | `UPDATE` apples to 2 | 510 |
+    | `DELETE` tea | 360 |
+    | `ROLLBACK TO SAVEPOINT` | 510 |
+    | `ROLLBACK` | 330 |
+
+    Derived from the sample data. Another session would see 330 throughout,
+    because nothing was committed.
+
+=== "Takeaway"
+
+    A savepoint undoes part of a transaction without ending it. Until `COMMIT`, the changes exist only for the session that made them.
 
 ## 10. Check yourself
 

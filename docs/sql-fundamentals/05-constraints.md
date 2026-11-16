@@ -7,6 +7,19 @@ tags: [stage-1, sql, integrity]
 !!! abstract "Chapter card"
     **Stage:** 1 (sections 1 to 5), 2 (sections 6 to 8) · **Prerequisites:** 1.7, 1.8 · **Time:** 2 hours
 
+## At a glance
+
+A constraint is a rule the database enforces on every row, whoever writes it.
+
+| Subtopic | In one line |
+|---|---|
+| NOT NULL, PRIMARY KEY, UNIQUE | Required and identifying values |
+| FOREIGN KEY | References and delete rules |
+| CHECK | Row-level conditions, and how NULL passes them |
+| How constraints are enforced | Indexes, end-of-statement checking, foreign key indexes |
+| States and deferral | NOVALIDATE, DEFERRABLE |
+| Cross-row and cross-table rules | Unique function-based indexes, APIs, assertions (26ai) |
+
 ## 1. Overview
 
 A **constraint** is a rule the database enforces on every row, no matter which
@@ -190,6 +203,33 @@ table above.
 Common mistakes: expecting `CHECK (col IN ('A','B'))` to reject null; using
 `UNIQUE` on a nullable column and being surprised by many nulls; dropping a
 constraint to load data and forgetting to re-enable it.
+
+## FreshMart example
+
+=== "Scenario"
+
+    A batch script written by another team inserts orders directly and gets the arithmetic wrong. The database is the last line of defense.
+
+=== "SQL"
+
+    ```sql
+    INSERT INTO orders (customer_id, address_id, warehouse_id,
+                        subtotal, discount_amount, delivery_fee, total_amount)
+    VALUES (104, 204, 1, 100, 0, 30, 100);      -- total should be 130
+    ```
+
+=== "Result"
+
+    ```text
+    ORA-02290: check constraint (FRESHMART.CK_ORDERS_TOTAL) violated
+    ```
+
+    Expected from the constraint definition
+    `total_amount = subtotal - discount_amount + delivery_fee`; not executed.
+
+=== "Takeaway"
+
+    The script's author learns about the rule at the moment of the mistake, with the rule's name in the message, instead of finance finding a wrong total a month later.
 
 ## 9. Check yourself
 

@@ -7,6 +7,20 @@ tags: [stage-1, sql, ddl]
 !!! abstract "Chapter card"
     **Stage:** 1 · **Prerequisites:** 1.3, 1.5 · **Time:** 2 hours · **Applies to:** 19c+ (23ai additions marked)
 
+## At a glance
+
+DDL defines structure: it creates, changes and removes tables and other objects, and it commits implicitly.
+
+| Subtopic | In one line |
+|---|---|
+| CREATE TABLE | Columns, data types, constraints |
+| Generated keys | Identity columns and sequences |
+| Defaults and virtual columns | Values supplied or computed by the database |
+| ALTER TABLE | Add, modify, rename, drop; what is instant and what is not |
+| DROP, TRUNCATE, DELETE | Three ways to remove, very different consequences |
+| 23ai conveniences | IF EXISTS, domains, BOOLEAN, annotations |
+| GRANT and REVOKE | The first look at privileges |
+
 ## 1. Overview
 
 **Data Definition Language** creates and changes the *structure* of the
@@ -214,6 +228,41 @@ Group privileges into **roles** and grant the role. Full treatment in
 - Expecting CTAS to copy keys and indexes.
 - `TRUNCATE` on a parent table: fails with `ORA-02266` while enabled foreign keys reference it (12c+ offers `TRUNCATE ... CASCADE` when the keys are `ON DELETE CASCADE`).
 - Forgetting that a `DATE` has a time part.
+
+## FreshMart example
+
+=== "Scenario"
+
+    Warehouses start scanning barcodes. Products need an optional, unique barcode. Make the change, inspect it, and undo it (this is a lab exercise, not a deployed change).
+
+=== "SQL"
+
+    ```sql
+    ALTER TABLE products ADD (barcode VARCHAR2(20));
+    ALTER TABLE products ADD CONSTRAINT uq_products_barcode UNIQUE (barcode);
+    COMMENT ON COLUMN products.barcode IS 'EAN-13 barcode; optional';
+
+    SELECT column_name, data_type, data_length, nullable
+    FROM   user_tab_columns
+    WHERE  table_name = 'PRODUCTS' AND column_name = 'BARCODE';
+
+    -- Undo
+    ALTER TABLE products DROP CONSTRAINT uq_products_barcode;
+    ALTER TABLE products DROP COLUMN barcode;
+    ```
+
+=== "Result"
+
+    | COLUMN_NAME | DATA_TYPE | DATA_LENGTH | NULLABLE |
+    |---|---|---:|---|
+    | BARCODE | VARCHAR2 | 20 | Y |
+
+    Illustrative. All 12 existing products have a null barcode, which the unique
+    constraint allows.
+
+=== "Takeaway"
+
+    Adding a nullable column is a dictionary change, instant at any table size. Each statement committed on its own: there was never anything to roll back, which is why the undo is two more DDL statements.
 
 ## 10. Check yourself
 

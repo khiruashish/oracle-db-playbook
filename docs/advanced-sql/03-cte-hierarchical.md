@@ -7,6 +7,19 @@ tags: [stage-2, sql, cte, hierarchy]
 !!! abstract "Chapter card"
     **Stage:** 2 · **Prerequisites:** 2.2 · **Time:** 3 hours · **Applies to:** 19c+ (recursive `WITH` since 11.2)
 
+## At a glance
+
+`WITH` names a subquery so a statement reads top to bottom; its recursive form, and `CONNECT BY`, walk hierarchies.
+
+| Subtopic | In one line |
+|---|---|
+| Common table expressions | Named, reusable subqueries |
+| How CTEs execute | Inlined or materialized |
+| Recursive WITH | Anchor member plus recursive member (standard SQL) |
+| CONNECT BY | Oracle's hierarchical syntax: LEVEL, PRIOR, SYS_CONNECT_BY_PATH |
+| Rolling up a hierarchy | Totals per subtree |
+| Choosing | CONNECT BY versus recursive WITH |
+
 ## 1. Common table expressions (the WITH clause)
 
 A **CTE** names a subquery so you can read the statement top to bottom and
@@ -217,6 +230,47 @@ SQL property graphs :material-tag: **23ai+** ([4.7](../oracle-26ai/01-oracle-26a
 - No cycle protection on user-maintained hierarchies.
 - Assuming a CTE is always materialized (or never).
 - Using `ORDER BY` instead of `ORDER SIBLINGS BY`, which destroys the tree order.
+
+## FreshMart example
+
+=== "Scenario"
+
+    Product pages show a breadcrumb such as "Fresh Produce > Fruits". Produce the full path of every category.
+
+=== "SQL"
+
+    ```sql
+    WITH tree (category_id, category_name, path, lvl) AS (
+        SELECT category_id, category_name, category_name, 1
+        FROM   categories
+        WHERE  parent_category_id IS NULL
+        UNION ALL
+        SELECT c.category_id, c.category_name, t.path || ' > ' || c.category_name, t.lvl + 1
+        FROM   categories c
+        JOIN   tree t ON t.category_id = c.parent_category_id
+    )
+    SELECT category_id, path, lvl
+    FROM   tree
+    ORDER  BY path;
+    ```
+
+=== "Result"
+
+    | CATEGORY_ID | PATH | LVL |
+    |---:|---|---:|
+    | 5 | Bakery | 1 |
+    | 6 | Beverages | 1 |
+    | 4 | Dairy and Eggs | 1 |
+    | 1 | Fresh Produce | 1 |
+    | 2 | Fresh Produce > Fruits | 2 |
+    | 3 | Fresh Produce > Vegetables | 2 |
+    | 7 | Staples | 1 |
+
+    Derived from the sample data.
+
+=== "Takeaway"
+
+    The anchor selects the top-level categories; each recursion adds the children of rows already found and extends the path. The same query works unchanged if a third level is added tomorrow.
 
 ## 8. Check yourself
 

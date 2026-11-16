@@ -7,6 +7,19 @@ tags: [stage-1, indexing]
 !!! abstract "Chapter card"
     **Stage:** 1 · **Prerequisites:** 1.10 · **Time:** 1 hour · **Continues in:** [2.12 Indexing](../indexing/01-indexing.md)
 
+## At a glance
+
+An index is a sorted structure that lets Oracle go straight to the rows it needs.
+
+| Subtopic | In one line |
+|---|---|
+| B-tree structure | Root, branches, leaves, rowids |
+| Creating and dropping | Syntax; you never name an index in a query |
+| Seeing the effect | Full scan versus index range scan |
+| Automatic indexes | Primary and unique keys yes, foreign keys no |
+| Cost | Every index slows writes |
+| When it helps | Selectivity and what blocks index use |
+
 ## 1. Overview
 
 An **index** is a separate, sorted structure that lets Oracle find rows without
@@ -125,6 +138,39 @@ fetch row by row.
 - Index the columns your most frequent queries filter on.
 - For a query filtering on two columns, one **composite** index on both usually beats two single-column indexes. Put equality columns first ([2.12](../indexing/01-indexing.md)).
 - Do not index everything. Measure, then add.
+
+## FreshMart example
+
+=== "Scenario"
+
+    Login looks a customer up by email on every sign-in. Check that this is an index lookup and not a table scan.
+
+=== "SQL"
+
+    ```sql
+    EXPLAIN PLAN FOR
+    SELECT customer_id, customer_name
+    FROM   customers
+    WHERE  email = 'priya.nair@example.com';
+
+    SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY(format => 'BASIC +PREDICATE'));
+    ```
+
+=== "Result"
+
+    ```text
+    | Id | Operation                   | Name               |
+    |  0 | SELECT STATEMENT            |                    |
+    |  1 |  TABLE ACCESS BY INDEX ROWID| CUSTOMERS          |
+    |* 2 |   INDEX UNIQUE SCAN         | UQ_CUSTOMERS_EMAIL |
+       2 - access("EMAIL"='priya.nair@example.com')
+    ```
+
+    Illustrative plan. The query returns customer 102, Priya Nair.
+
+=== "Takeaway"
+
+    Nobody created this index by hand: the unique constraint on `email` did. `INDEX UNIQUE SCAN` means at most one row, found in a few block reads however large the table grows. Note that `WHERE UPPER(email) = ...` would not use it.
 
 ## 10. Check yourself
 

@@ -7,6 +7,20 @@ tags: [stage-1, sql]
 !!! abstract "Chapter card"
     **Stage:** 1 · **Prerequisites:** 1.2, FreshMart installed · **Time:** 3 hours · **Applies to:** 19c+ (notes inline)
 
+## At a glance
+
+`SELECT` reads rows: you describe the result and Oracle works out how to fetch it.
+
+| Subtopic | In one line |
+|---|---|
+| Statement groups | DQL, DML, DDL, DCL, TCL |
+| Clause order | FROM, WHERE, GROUP BY, HAVING, SELECT, ORDER BY, FETCH |
+| Columns, expressions, aliases | What to return |
+| WHERE | Comparison, BETWEEN, IN, LIKE, IS NULL, AND / OR / NOT |
+| DISTINCT | Remove duplicate rows |
+| ORDER BY | Sorting and null placement |
+| Limiting rows | FETCH FIRST and the ROWNUM trap |
+
 ## 1. Overview
 
 SQL statements fall into five groups. This chapter covers the first.
@@ -223,6 +237,39 @@ every user-supplied value: it prevents SQL injection
 | No `ORDER BY`, yet expecting an order | Always state the order you need |
 | `BETWEEN DATE '2025-03-01' AND DATE '2025-03-31'` on a column that has a time part | Use `>= DATE '2025-03-01' AND < DATE '2025-04-01'` |
 | `ORDER BY 2` (position) in application code | Name the column |
+
+## FreshMart example
+
+=== "Scenario"
+
+    The home page shows a "Budget picks" strip: the five cheapest active products under 100, cheapest first.
+
+=== "SQL"
+
+    ```sql
+    SELECT product_name, unit_price, unit_of_measure
+    FROM   products
+    WHERE  is_active = 'Y'
+    AND    unit_price < 100
+    ORDER  BY unit_price, product_name
+    FETCH  FIRST 5 ROWS ONLY;
+    ```
+
+=== "Result"
+
+    | PRODUCT_NAME | UNIT_PRICE | UNIT_OF_MEASURE |
+    |---|---:|---|
+    | Onion 1kg | 35 | KG |
+    | Tomato 1kg | 40 | KG |
+    | Whole Wheat Bread 400g | 45 | PACK |
+    | Banana Robusta 1 dozen | 60 | DOZEN |
+    | Full Cream Milk 1L | 68 | LITRE |
+
+    Derived from the sample data.
+
+=== "Takeaway"
+
+    Filter, sort, limit: three clauses cover most screens of an application. The second sort column makes the order deterministic when two products share a price.
 
 ## 8. Check yourself
 

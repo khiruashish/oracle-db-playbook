@@ -122,7 +122,7 @@ sequenceDiagram
     O->>G: 1. Start Extract (capture from SCN X)
     O->>N: 2. Initial load as of SCN X (Data Pump / RMAN)
     G->>N: 3. Replicat applies changes since X
-    Note over O,N: 4. Lag near zero; validate data (Veridata)
+    Note over O,N: 4. Lag near zero, then validate data (Veridata)
     Note over O,N: 5. Optional: reverse replication N -> O ready for fallback
     O-->>N: 6. Cutover: stop writes, drain, switch connections
     N->>G: 7. Fallback path kept until sign-off
