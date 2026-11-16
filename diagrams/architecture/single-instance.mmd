@@ -1,0 +1,12 @@
+flowchart LR
+    U[Customers] --> LB[Load balancer]
+    LB --> A1[App instance 1<br>pool: 5]
+    LB --> A2[App instance 2<br>pool: 5]
+    A1 & A2 -->|service fm_oltp| L[Listener]
+    subgraph DBS[Database server]
+        L --> PDB[(CDB / PDB FRESHMART)]
+        PDB --> FRA[(Fast recovery area<br>archive logs, backups)]
+    end
+    FRA -->|RMAN copy| OFF[(Off-site backup store)]
+    MON[Monitoring] -.-> PDB
+    MON -.-> A1

@@ -1,0 +1,9 @@
+flowchart LR
+    U[Users] -->|HTTPS| WAF[WAF / API gateway]
+    WAF --> APP[Application subnet<br>FM_APP via vault secret]
+    APP -->|TLS, private| DB[(Database subnet<br>TDE, Unified Audit)]
+    ADM[Administrators] --> PAM[Bastion / PAM<br>just-in-time, recorded]
+    PAM -->|named accounts| DB
+    DB -->|audit records| SIEM[(SIEM)]
+    DB --> KMS[Key management]
+    DB -->|masked clone| NP[(Non-production)]

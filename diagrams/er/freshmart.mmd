@@ -1,0 +1,81 @@
+erDiagram
+    CATEGORIES ||--o{ CATEGORIES : "parent of"
+    CATEGORIES ||--o{ PRODUCTS : classifies
+    SUPPLIERS ||--o{ PRODUCTS : supplies
+    CUSTOMERS ||--o{ ADDRESSES : has
+    CUSTOMERS ||--o{ CARTS : owns
+    CARTS ||--o{ CART_ITEMS : contains
+    PRODUCTS ||--o{ CART_ITEMS : "added as"
+    WAREHOUSES ||--o{ INVENTORY : stocks
+    PRODUCTS ||--o{ INVENTORY : "stocked as"
+    INVENTORY ||--o{ STOCK_MOVEMENTS : "changes by"
+    WAREHOUSES ||--o{ EMPLOYEES : employs
+    EMPLOYEES ||--o{ EMPLOYEES : manages
+    CUSTOMERS ||--o{ ORDERS : places
+    ADDRESSES ||--o{ ORDERS : "delivered to"
+    WAREHOUSES ||--o{ ORDERS : fulfils
+    COUPONS |o--o{ ORDERS : "applied to"
+    PROMOTIONS ||--o{ COUPONS : "redeemed via"
+    ORDERS ||--|{ ORDER_ITEMS : contains
+    PRODUCTS ||--o{ ORDER_ITEMS : "sold as"
+    ORDERS ||--o{ PAYMENTS : "paid by"
+    ORDERS ||--o| SHIPMENTS : "ships as"
+    EMPLOYEES |o--o{ SHIPMENTS : delivers
+    ORDER_ITEMS ||--o{ RETURNS : "returned as"
+    PRODUCTS ||--o{ REVIEWS : receives
+    CUSTOMERS ||--o{ REVIEWS : writes
+
+    CUSTOMERS {
+        number customer_id PK
+        varchar2 customer_name
+        varchar2 email UK
+        varchar2 phone
+        varchar2 city
+        varchar2 status
+        number row_version
+    }
+    PRODUCTS {
+        number product_id PK
+        varchar2 sku UK
+        varchar2 product_name
+        number category_id FK
+        number supplier_id FK
+        number unit_price
+        char is_active
+    }
+    INVENTORY {
+        number warehouse_id PK,FK
+        number product_id PK,FK
+        number qty_on_hand
+        number qty_reserved
+        number reorder_level
+    }
+    ORDERS {
+        number order_id PK
+        number customer_id FK
+        number address_id FK
+        number warehouse_id FK
+        number coupon_id FK
+        date order_date
+        varchar2 status
+        number subtotal
+        number discount_amount
+        number delivery_fee
+        number total_amount
+    }
+    ORDER_ITEMS {
+        number order_id PK,FK
+        number line_no PK
+        number product_id FK
+        number quantity
+        number unit_price
+        number line_total "virtual"
+    }
+    PAYMENTS {
+        number payment_id PK
+        number order_id FK
+        varchar2 payment_method
+        number amount
+        varchar2 status
+        varchar2 txn_reference UK
+    }

@@ -89,7 +89,7 @@ The complete FreshMart package is `sql/plsql/03_order_pkg.sql`. Its
 specification:
 
 ```sql
---8<-- "sql/plsql/03_order_pkg.sql:11:54"
+--8<-- "sql/plsql/03_order_pkg.sql:11:53"
 ```
 
 ### Why packages

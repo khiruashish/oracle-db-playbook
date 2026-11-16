@@ -1,0 +1,21 @@
+flowchart TB
+    subgraph REG1[Primary region]
+        subgraph VCN[Private network]
+            K8S[Kubernetes: FreshMart services]
+            DB1[(Managed database<br>primary, zone A)]
+            DB2[(Standby, zone B)]
+            K8S --> DB1
+            DB1 --> DB2
+        end
+        VAULT[Vault / KMS]
+        OBJ[(Object storage: backups)]
+        DB1 -.-> OBJ
+        K8S -.-> VAULT
+    end
+    subgraph REG2[DR region]
+        DB3[(Cross-region standby)]
+        K8S2[Kubernetes: scaled down]
+    end
+    DB1 -->|async redo| DB3
+    TF[Terraform] -.provisions.-> REG1
+    TF -.provisions.-> REG2
