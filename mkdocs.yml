@@ -1,0 +1,214 @@
+site_name: Oracle Database Production Engineering Playbook
+site_description: >-
+  A sequential, zero-to-architect study path for Oracle Database (19c to 26ai):
+  relational theory, SQL, PL/SQL, architecture, performance, HA/DR, security and
+  the complete FreshMart grocery application.
+site_author: Oracle DB Playbook contributors
+repo_url: https://github.com/khiruashish/oracle-db-playbook
+repo_name: khiruashish/oracle-db-playbook
+edit_uri: edit/main/docs/
+copyright: Content licensed under the MIT License. Oracle is a registered trademark of Oracle and/or its affiliates.
+strict: true
+
+theme:
+  name: material
+  language: en
+  icon:
+    logo: material/database
+    repo: fontawesome/brands/github
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: red
+      accent: deep orange
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: red
+      accent: deep orange
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.indexes
+    - navigation.instant
+    - navigation.instant.progress
+    - navigation.tracking
+    - navigation.top
+    - navigation.footer
+    - navigation.path
+    - toc.follow
+    - search.suggest
+    - search.highlight
+    - search.share
+    - content.code.copy
+    - content.code.annotate
+    - content.tabs.link
+    - content.tooltips
+    - content.action.edit
+
+plugins:
+  - search
+  - tags
+
+markdown_extensions:
+  - abbr
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+      toc_depth: 3
+  - pymdownx.details
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.mark
+  - pymdownx.snippets:
+      base_path: [".", "docs"]
+      check_paths: true
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+
+extra:
+  playbook_version: "1.0.0"
+  oracle_baseline: "Oracle AI Database 26ai (23.26.x), with 19c / 21c / 23ai differences noted"
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/khiruashish/oracle-db-playbook
+  generator: true
+
+extra_css:
+  - assets/extra.css
+
+nav:
+  - Home:
+      - index.md
+      - Study plan (start here): getting-started/study-plan.md
+      - How to read a chapter: getting-started/how-to-use.md
+      - Set up your lab database: getting-started/setup.md
+      - Versions, editions and licensing: getting-started/versions.md
+      - Glossary: glossary/index.md
+      - References: references/index.md
+      - Master prompt (reviewed): references/master-prompt.md
+  - "Stage 1 · Foundations":
+      - getting-started/stage-1.md
+      - Database fundamentals:
+          - "1.1 Data, databases and the RDBMS": database-fundamentals/01-data-and-databases.md
+          - "1.2 The relational model": database-fundamentals/02-relational-model.md
+      - Data modeling:
+          - "1.3 Data modeling and ER diagrams": data-modeling/01-data-modeling.md
+          - "1.4 Normalization": data-modeling/02-normalization.md
+      - SQL fundamentals:
+          - "1.5 SELECT: reading data": sql-fundamentals/01-select.md
+          - "1.6 NULL, expressions and functions": sql-fundamentals/02-null-and-functions.md
+          - "1.7 DDL: tables and data types": sql-fundamentals/03-ddl.md
+          - "1.8 DML and transactions basics": sql-fundamentals/04-dml-and-transactions.md
+          - "1.9 Constraints and data integrity": sql-fundamentals/05-constraints.md
+          - "1.10 Basic joins and aggregates": sql-fundamentals/06-joins-and-aggregates.md
+          - "1.11 Your first index": sql-fundamentals/07-first-index.md
+  - "Stage 2 · Developer":
+      - getting-started/stage-2.md
+      - Advanced SQL:
+          - "2.1 Joins in depth": advanced-sql/01-joins.md
+          - "2.2 Subqueries and set operators": advanced-sql/02-subqueries-set-operators.md
+          - "2.3 CTEs and hierarchical queries": advanced-sql/03-cte-hierarchical.md
+          - "2.4 Advanced aggregation and PIVOT": advanced-sql/04-aggregation-pivot.md
+          - "2.5 Window (analytic) functions": advanced-sql/05-window-functions.md
+          - "2.6 MERGE, Top-N, pagination, JSON": advanced-sql/06-merge-topn-json.md
+      - PL/SQL:
+          - "2.7 PL/SQL fundamentals": plsql/01-fundamentals.md
+          - "2.8 Cursors, collections, bulk SQL": plsql/02-cursors-collections-bulk.md
+          - "2.9 Procedures, packages, triggers": plsql/03-subprograms-packages-triggers.md
+          - "2.10 Exceptions, dynamic SQL, advanced": plsql/04-exceptions-dynamic-advanced.md
+      - Design for concurrency and speed:
+          - "2.11 Transactions and concurrency": transactions/01-transactions-concurrency.md
+          - "2.12 Indexing": indexing/01-indexing.md
+          - "2.13 Partitioning": partitioning/01-partitioning.md
+          - "2.14 Views, MVs and other objects": database-objects/01-database-objects.md
+          - "2.15 Execution plans and SQL tuning": performance-engineering/01-execution-plans.md
+  - "Stage 3 · Senior DBA":
+      - getting-started/stage-3.md
+      - Architecture and storage:
+          - "3.1 Oracle architecture": oracle-architecture/01-architecture.md
+          - "3.2 Storage management": storage-management/01-storage.md
+      - Administration:
+          - "3.3 Administration and multitenant": database-administration/01-administration.md
+          - "3.4 Backup and recovery": backup-recovery/01-backup-recovery.md
+          - "3.5 Security": security/01-security.md
+      - Performance:
+          - "3.6 Optimizer, statistics, SPM": performance-engineering/02-optimizer-statistics-spm.md
+          - "3.7 AWR, ASH and wait analysis": performance-engineering/03-awr-ash-waits.md
+      - Availability:
+          - "3.8 RAC, Clusterware and ASM": high-availability/01-rac-asm.md
+          - "3.9 Data Guard": high-availability/02-data-guard.md
+  - "Stage 4 · Principal":
+      - getting-started/stage-4.md
+      - "4.1 HA and DR architecture": high-availability/03-ha-dr-architecture.md
+      - "4.2 GoldenGate and replication": high-availability/04-goldengate-replication.md
+      - "4.3 Distributed databases and sharding": distributed-databases/01-distributed.md
+      - "4.4 Scalability: Resource Manager, In-Memory, compression": performance-engineering/04-scalability-features.md
+      - "4.5 Data movement and integration": data-integration/01-data-integration.md
+      - "4.6 Data warehousing": data-warehousing/01-data-warehousing.md
+      - "4.7 Oracle AI Database 26ai": oracle-26ai/01-oracle-26ai.md
+      - "4.8 Spring Boot and Oracle": spring-boot-integration/01-spring-boot.md
+      - "4.9 Database DevOps": database-devops/01-devops.md
+  - "Stage 5 · Architect":
+      - getting-started/stage-5.md
+      - "5.1 Cloud, Exadata and Autonomous": cloud-database/01-cloud.md
+      - "5.2 Global and multi-region architecture": enterprise-architecture/01-global-architecture.md
+      - "5.3 Strategy, governance and ADRs": enterprise-architecture/02-strategy-governance.md
+  - FreshMart project:
+      - grocery-application/index.md
+      - "1 Business analysis": grocery-application/01-business-analysis.md
+      - "2 Data model": grocery-application/02-data-model.md
+      - "3 Implementation": grocery-application/03-implementation.md
+      - "4 Business queries": grocery-application/04-business-queries.md
+      - "5 Scaling: 10K to 10M customers": grocery-application/05-scaling.md
+      - "6 Production architecture": grocery-application/06-architecture.md
+  - Operations:
+      - production-runbooks/index.md
+      - Runbooks:
+          - Startup, shutdown, sessions, locks: production-runbooks/01-instance-sessions-locks.md
+          - Space, undo, redo, archive: production-runbooks/02-space-undo-redo.md
+          - SQL, objects, users, indexes: production-runbooks/03-sql-objects-users.md
+          - RMAN and Data Pump: production-runbooks/04-rman-datapump.md
+          - PDB, patching, upgrades: production-runbooks/05-pdb-patching-upgrade.md
+          - Data Guard, RAC, capacity, alert log: production-runbooks/06-dataguard-rac-capacity.md
+      - Performance incidents: performance-incidents/01-incidents.md
+      - Production standards: standards/01-standards.md
+  - Practice:
+      - hands-on-labs/index.md
+      - Labs:
+          - "Labs: Stage 1": hands-on-labs/01-stage-1.md
+          - "Labs: Stage 2": hands-on-labs/02-stage-2.md
+          - "Labs: Stages 3 to 5": hands-on-labs/03-stage-3-5.md
+      - Interview preparation:
+          - interview-preparation/index.md
+          - "0 years": interview-preparation/01-level-0.md
+          - "5 years": interview-preparation/02-level-5.md
+          - "10 years": interview-preparation/03-level-10.md
+          - "15 years": interview-preparation/04-level-15.md
+          - "20 years": interview-preparation/05-level-20.md
+          - SQL coding and debugging: interview-preparation/06-coding-challenges.md
