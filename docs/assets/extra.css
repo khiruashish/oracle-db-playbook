@@ -1,4 +1,191 @@
-/* Small, theme-safe refinements */
-.md-typeset table:not([class]) { font-size: 0.72rem; }
-.md-typeset table:not([class]) th { white-space: nowrap; }
+/* =========================================================================
+   Oracle Database Playbook: 3D depth styling
+   Pure CSS. Colours follow Material's theme variables, so light and dark
+   mode both work. Motion is removed for readers who ask for reduced motion.
+   ========================================================================= */
+
+/* ---------- Depth tokens -------------------------------------------------- */
+:root {
+  --pb-radius: 0.6rem;
+  --pb-lift: cubic-bezier(0.2, 0.8, 0.2, 1);
+  /* Layered shadows: a tight contact shadow plus a soft ambient one */
+  --pb-shadow-1: 0 1px 2px rgba(17, 24, 39, 0.10), 0 2px 6px rgba(17, 24, 39, 0.08);
+  --pb-shadow-2: 0 2px 4px rgba(17, 24, 39, 0.10), 0 8px 20px rgba(17, 24, 39, 0.12);
+  --pb-shadow-3: 0 4px 8px rgba(17, 24, 39, 0.12), 0 18px 40px rgba(17, 24, 39, 0.18);
+  --pb-edge: rgba(255, 255, 255, 0.70);   /* top highlight that sells the bevel */
+  --pb-surface: var(--md-default-bg-color);
+}
+
+[data-md-color-scheme="slate"] {
+  --pb-shadow-1: 0 1px 2px rgba(0, 0, 0, 0.45), 0 2px 6px rgba(0, 0, 0, 0.35);
+  --pb-shadow-2: 0 2px 4px rgba(0, 0, 0, 0.50), 0 8px 20px rgba(0, 0, 0, 0.45);
+  --pb-shadow-3: 0 4px 8px rgba(0, 0, 0, 0.55), 0 18px 40px rgba(0, 0, 0, 0.55);
+  --pb-edge: rgba(255, 255, 255, 0.06);
+  --pb-surface: hsl(232, 15%, 18%);
+}
+
+/* ---------- Header: a raised bar ----------------------------------------- */
+.md-header {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.18), 0 6px 16px rgba(0, 0, 0, 0.14);
+}
+.md-tabs {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 4px 10px rgba(0, 0, 0, 0.12);
+}
+
+/* ---------- Content: the page sits on a raised sheet --------------------- */
+@media screen and (min-width: 76.25em) {
+  .md-content__inner {
+    background: var(--pb-surface);
+    border-radius: var(--pb-radius);
+    box-shadow: var(--pb-shadow-2), inset 0 1px 0 var(--pb-edge);
+    padding: 1rem 1.3rem 1.4rem;
+    margin-top: 1.2rem;
+    margin-bottom: 1.6rem;
+  }
+}
+
+/* ---------- Buttons: raised, press in on click --------------------------- */
+.md-typeset .md-button {
+  border-radius: 0.5rem;
+  box-shadow: var(--pb-shadow-1), inset 0 1px 0 var(--pb-edge);
+  transform: translateY(0);
+  transition: transform 150ms var(--pb-lift), box-shadow 150ms var(--pb-lift);
+}
+.md-typeset .md-button:hover,
+.md-typeset .md-button:focus-visible {
+  transform: translateY(-2px);
+  box-shadow: var(--pb-shadow-2), inset 0 1px 0 var(--pb-edge);
+}
+.md-typeset .md-button:active {
+  transform: translateY(1px);
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.25);
+}
+
+/* ---------- Grid cards: lifted tiles ------------------------------------- */
+/* Narrower minimum so cards sit side by side inside the raised sheet */
+.md-typeset .grid.cards {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 12.5rem), 1fr));
+  gap: 0.9rem;
+}
+.md-typeset .grid.cards > ul > li,
+.md-typeset .grid > .card {
+  border: 1px solid var(--md-default-fg-color--lightest);
+  border-radius: var(--pb-radius);
+  background: var(--pb-surface);
+  box-shadow: var(--pb-shadow-1), inset 0 1px 0 var(--pb-edge);
+  transition: transform 220ms var(--pb-lift), box-shadow 220ms var(--pb-lift),
+              border-color 220ms var(--pb-lift);
+}
+.md-typeset .grid.cards > ul > li:hover,
+.md-typeset .grid.cards > ul > li:focus-within,
+.md-typeset .grid > .card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--pb-shadow-3), inset 0 1px 0 var(--pb-edge);
+  border-color: var(--md-accent-fg-color);
+}
+.md-typeset .grid.cards .lg {
+  font-size: 1.6em;
+  vertical-align: -0.25em;
+  color: var(--md-primary-fg-color);
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.25));
+}
+
+/* Home page stage cards: a gentle perspective tilt that levels out on hover */
+@media screen and (min-width: 45em) {
+  .md-typeset .stage-cards {
+    perspective: 700px;
+  }
+  .md-typeset .stage-cards > ul > li {
+    transform: rotateX(10deg) translateY(0);
+    box-shadow: var(--pb-shadow-2), inset 0 1px 0 var(--pb-edge);
+    transform-origin: 50% 100%;
+  }
+  .md-typeset .stage-cards > ul > li:hover,
+  .md-typeset .stage-cards > ul > li:focus-within {
+    transform: rotateX(0deg) translateY(-6px);
+  }
+}
+
+/* ---------- Admonitions and collapsible blocks --------------------------- */
+.md-typeset .admonition,
+.md-typeset details {
+  border-radius: var(--pb-radius);
+  box-shadow: var(--pb-shadow-1);
+  transition: transform 200ms var(--pb-lift), box-shadow 200ms var(--pb-lift);
+}
+.md-typeset .admonition:hover,
+.md-typeset details:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--pb-shadow-2);
+}
+
+/* ---------- Tables: an inset-framed panel -------------------------------- */
+.md-typeset table:not([class]) {
+  font-size: 0.72rem;
+  border-radius: var(--pb-radius);
+  box-shadow: var(--pb-shadow-1);
+  overflow: hidden;
+}
+.md-typeset table:not([class]) th {
+  white-space: nowrap;
+  background: linear-gradient(to bottom,
+              var(--md-default-fg-color--lightest), transparent);
+}
+.md-typeset table:not([class]) tbody tr {
+  transition: background-color 150ms ease;
+}
+
+/* ---------- Content tabs: raised tab strip ------------------------------- */
+.md-typeset .tabbed-set {
+  border-radius: var(--pb-radius);
+  box-shadow: var(--pb-shadow-1);
+  padding: 0 0.6rem 0.4rem;
+}
+.md-typeset .tabbed-labels > label {
+  border-radius: 0.4rem 0.4rem 0 0;
+  transition: transform 150ms var(--pb-lift), background-color 150ms ease;
+}
+.md-typeset .tabbed-labels > label:hover {
+  transform: translateY(-1px);
+}
+
+/* ---------- Code blocks: a recessed well --------------------------------- */
+.md-typeset pre > code {
+  border-radius: 0.5rem;
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.12), inset 0 0 0 1px var(--md-default-fg-color--lightest);
+}
+
+/* ---------- Diagrams and images: floating panels ------------------------- */
+.md-typeset .mermaid {
+  border-radius: var(--pb-radius);
+  box-shadow: var(--pb-shadow-1);
+  padding: 0.6rem;
+  background: var(--pb-surface);
+}
+
+/* ---------- Footer previous / next: raised links ------------------------- */
+.md-footer__link {
+  border-radius: var(--pb-radius);
+  transition: transform 200ms var(--pb-lift), background-color 200ms ease;
+}
+.md-footer__link:hover {
+  transform: translateY(-2px);
+  background-color: rgba(255, 255, 255, 0.04);
+}
+
+/* ---------- Unchanged helpers -------------------------------------------- */
 .md-typeset .chapter-meta { font-size: 0.75rem; }
+
+/* ---------- Respect reduced-motion preferences --------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  .md-typeset .md-button,
+  .md-typeset .grid.cards > ul > li,
+  .md-typeset .stage-cards > ul > li,
+  .md-typeset .admonition,
+  .md-typeset details,
+  .md-typeset .tabbed-labels > label,
+  .md-footer__link {
+    transition: none !important;
+    transform: none !important;
+  }
+}
