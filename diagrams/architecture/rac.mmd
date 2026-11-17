@@ -1,0 +1,9 @@
+flowchart TB
+    APP[Application tier<br>UCP, FAN, TAC] --> SCAN[SCAN listeners]
+    subgraph CL[Primary site: 2-node RAC]
+        SCAN --> N1[Instance 1]
+        SCAN --> N2[Instance 2]
+        N1 <-->|private interconnect| N2
+        N1 & N2 --> ASM[(ASM: +DATA, +RECO)]
+    end
+    ASM -->|redo| SB[(Standby site<br>RAC or single instance)]

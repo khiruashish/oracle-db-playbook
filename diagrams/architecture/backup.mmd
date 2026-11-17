@@ -1,0 +1,8 @@
+flowchart LR
+    P[(Primary)] -->|redo| S[(Standby)]
+    S -->|RMAN incremental + archive logs| L[(Local backup disk<br>7 days)]
+    L -->|copy| OS[(Object storage<br>immutable, 35 days + yearly)]
+    P -->|flashback logs, undo| F[Flashback<br>hours to days]
+    S -->|weekly Data Pump| DP[(Schema exports)]
+    K[Keystore backup] --> OS2[(Separate secure location)]
+    OS --> RT[Quarterly restore test<br>scratch environment]

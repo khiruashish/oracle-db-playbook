@@ -1,0 +1,42 @@
+# RMAN recovery scripts. DESTRUCTIVE in the wrong place: read the runbook first.
+# Not executed in this repository.
+
+# --8<-- [start:datafile]
+# Lost or corrupt non-system data file: database stays open
+ALTER DATABASE DATAFILE 7 OFFLINE;
+RESTORE DATAFILE 7;
+RECOVER DATAFILE 7;
+ALTER DATABASE DATAFILE 7 ONLINE;
+# --8<-- [end:datafile]
+
+# --8<-- [start:block]
+# Block media recovery (Enterprise Edition)
+RECOVER CORRUPTION LIST;
+# --8<-- [end:block]
+
+# --8<-- [start:pdbpitr]
+# Point-in-time recovery of one PDB: other PDBs stay open
+ALTER PLUGGABLE DATABASE freshmart CLOSE IMMEDIATE;
+RUN {
+  SET UNTIL TIME "TO_DATE('2026-03-14 10:13:00', 'YYYY-MM-DD HH24:MI:SS')";
+  RESTORE PLUGGABLE DATABASE freshmart;
+  RECOVER PLUGGABLE DATABASE freshmart;
+}
+ALTER PLUGGABLE DATABASE freshmart OPEN RESETLOGS;
+# --8<-- [end:pdbpitr]
+
+# --8<-- [start:table]
+# Recover one table to a point in time into a new name (12c+)
+RECOVER TABLE freshmart.products OF PLUGGABLE DATABASE freshmart
+  UNTIL TIME "TO_DATE('2026-03-14 10:13:00', 'YYYY-MM-DD HH24:MI:SS')"
+  AUXILIARY DESTINATION '/u01/aux'
+  REMAP TABLE 'FRESHMART'.'PRODUCTS':'PRODUCTS_AT_1013';
+# --8<-- [end:table]
+
+# --8<-- [start:full]
+# Complete recovery of the whole database after media loss
+STARTUP MOUNT;
+RESTORE DATABASE;
+RECOVER DATABASE;
+ALTER DATABASE OPEN;
+# --8<-- [end:full]

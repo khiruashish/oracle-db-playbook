@@ -1,0 +1,165 @@
+---
+tags: [labs, stage-1]
+---
+
+# Labs: Stage 1
+
+## Lab 1.1 Explore the schema
+
+**Objective.** Find your way around an unfamiliar schema using the data dictionary.
+**Prerequisites.** Chapters 1.1 to 1.3; FreshMart installed.
+**Setup.** Connect as `FRESHMART`. `ALTER SESSION SET nls_date_format = 'YYYY-MM-DD';`
+
+**Steps**
+
+```sql
+SELECT table_name, num_rows FROM user_tables ORDER BY table_name;
+DESCRIBE orders
+SELECT constraint_name, constraint_type, search_condition_vc
+FROM   user_constraints WHERE table_name = 'ORDERS' ORDER BY constraint_type;
+SELECT a.table_name AS child, a.constraint_name, c.table_name AS parent
+FROM   user_constraints a JOIN user_constraints c ON c.constraint_name = a.r_constraint_name
+WHERE  a.constraint_type = 'R' ORDER BY 1;
+```
+
+**Expected results.** 20 tables. `ORDERS` has 1 primary key (`P`), 4 foreign
+keys (`R`), and check constraints (`C`, including the `NOT NULL` ones). The
+last query lists 25 foreign keys.
+
+**Validation.** `SELECT COUNT(*) FROM user_constraints WHERE constraint_type = 'R';` returns 25.
+
+**Challenge.** Without looking at the documentation, draw the path from
+`reviews` to `suppliers`.
+
+??? success "Solution"
+    `reviews.product_id → products.product_id`, then
+    `products.supplier_id → suppliers.supplier_id`.
+
+**Further exploration.** `SELECT DBMS_METADATA.GET_DDL('TABLE', 'ORDERS') FROM dual;`
+and compare with `sql/schema/01_tables.sql`.
+
+---
+
+## Lab 1.2 Query and filter
+
+**Objective.** Write correct single-table and two-table queries.
+**Prerequisites.** Chapters 1.5, 1.6, 1.10.
+
+**Steps and expected results**
+
+| # | Task | Expected |
+|---|---|---|
+| 1 | Customers in Mumbai, by name | Karan Mehta, Rahul Sharma, Sneha Iyer |
+| 2 | Products between 60 and 100 inclusive | Banana 60, Milk 68, Eggs 84, Paneer 95 |
+| 3 | Customers with no phone | Amit Verma, Neha Gupta (*verified*) |
+| 4 | The three largest orders | 1007 (736), 1002 (720), 1001 (639) |
+| 5 | Orders per status with total | CANCELLED 1/270, DELIVERED 5/2596, PLACED 1/736, SHIPPED 1/356 (*verified*) |
+| 6 | Every customer with their order count | 101→3, 102→2, 103→1, 104→1, 105→1, 106→0 (*verified*) |
+| 7 | Product names never ordered | Wheat Flour 5kg (*verified*) |
+
+**Validation.** Your seven results match the table.
+
+**Challenge.** Net revenue (cancelled excluded) per category, highest first.
+
+??? success "Solution"
+    ```sql
+    SELECT c.category_name, SUM(oi.line_total) AS revenue
+    FROM   order_items oi
+    JOIN   orders o     ON o.order_id    = oi.order_id
+    JOIN   products p   ON p.product_id  = oi.product_id
+    JOIN   categories c ON c.category_id = p.category_id
+    WHERE  o.status <> 'CANCELLED'
+    GROUP  BY c.category_name
+    ORDER  BY revenue DESC;
+    ```
+    Staples 1300, Dairy and Eggs 918, Fruits 660, Beverages 420, Vegetables 190,
+    Bakery 180 (*verified*).
+
+    Solutions for tasks 1 to 7 are the examples in chapters
+    [1.5](../sql-fundamentals/01-select.md), [1.6](../sql-fundamentals/02-null-and-functions.md)
+    and [1.10](../sql-fundamentals/06-joins-and-aggregates.md).
+
+**Further exploration.** Rewrite task 7 three ways: `NOT EXISTS`, `LEFT JOIN ... IS NULL`, `MINUS`.
+
+---
+
+## Lab 1.3 Change data safely
+
+**Objective.** Use DML with transactions, and see isolation with two sessions.
+**Prerequisites.** Chapter 1.8. Two sessions connected as `FRESHMART` (A and B).
+
+**Steps**
+
+| # | Session | Statement | Observe |
+|---|---|---|---|
+| 1 | A | `UPDATE products SET unit_price = 70 WHERE product_id = 5;` | 1 row updated |
+| 2 | A | `SELECT unit_price FROM products WHERE product_id = 5;` | 70 |
+| 3 | B | Same `SELECT` | **68**: B does not see uncommitted work |
+| 4 | B | `UPDATE products SET unit_price = 72 WHERE product_id = 5;` | B **waits** |
+| 5 | A | `ROLLBACK;` | B's update completes |
+| 6 | B | `SELECT unit_price ...` then `ROLLBACK;` | 72, then back to 68 |
+| 7 | A | `SAVEPOINT s1;` insert a category; `ROLLBACK TO s1;` `COMMIT;` | The category is gone |
+
+**Validation.** `SELECT unit_price FROM products WHERE product_id = 5;` returns
+68 in both sessions; `SELECT COUNT(*) FROM categories;` returns 7.
+
+**Challenge.** In session A delete customer 101. Explain the error and what
+would have to change for the delete to succeed. Should it?
+
+??? success "Solution"
+    `ORA-02292 ... FK_ORDERS_CUSTOMER ... child record found`. Orders reference
+    the customer. Making the delete work would need the orders removed or the
+    key cascaded, and commercial records must not disappear: deactivate the
+    customer (`status = 'INACTIVE'`) instead.
+
+**Further exploration.** Repeat step 4 with `SELECT ... FOR UPDATE NOWAIT` in
+session B and read `ORA-00054`.
+
+---
+
+## Lab 1.4 Build and constrain a table
+
+**Objective.** Create a table with keys and rules, and prove each rule works.
+**Prerequisites.** Chapters 1.7, 1.9.
+
+**Steps**
+
+```sql
+CREATE TABLE delivery_slots (
+    slot_id      NUMBER(10) GENERATED BY DEFAULT ON NULL AS IDENTITY,
+    warehouse_id NUMBER(10) NOT NULL,
+    slot_start   TIMESTAMP  NOT NULL,
+    capacity     NUMBER(4)  DEFAULT 20 NOT NULL,
+    CONSTRAINT pk_delivery_slots PRIMARY KEY (slot_id),
+    CONSTRAINT uq_delivery_slots UNIQUE (warehouse_id, slot_start),
+    CONSTRAINT fk_delivery_slots_wh FOREIGN KEY (warehouse_id) REFERENCES warehouses (warehouse_id),
+    CONSTRAINT ck_delivery_slots_cap CHECK (capacity BETWEEN 1 AND 500)
+);
+CREATE INDEX ix_delivery_slots_wh ON delivery_slots (warehouse_id);   -- see the note below
+```
+
+Then insert one valid row and attempt four invalid ones.
+
+**Expected results**
+
+| Attempt | Error |
+|---|---|
+| Valid row for warehouse 1 | 1 row created; `capacity` is 20 |
+| Same warehouse and time again | `ORA-00001 (UQ_DELIVERY_SLOTS)` |
+| Warehouse 99 | `ORA-02291 (FK_DELIVERY_SLOTS_WH)` |
+| Capacity 0 | `ORA-02290 (CK_DELIVERY_SLOTS_CAP)` |
+| Null `slot_start` | `ORA-01400` |
+
+**Validation.** `SELECT COUNT(*) FROM delivery_slots;` returns 1.
+
+**Challenge.** The separate index on `warehouse_id` is redundant. Why?
+
+??? success "Solution"
+    The unique constraint's index on `(warehouse_id, slot_start)` already has
+    `warehouse_id` as its leading column, so it supports the foreign key.
+    Drop `ix_delivery_slots_wh`.
+
+**Clean up.** `DROP TABLE delivery_slots PURGE;`
+
+**Further exploration.** On 23ai+: recreate the table with a `BOOLEAN is_open`
+column and `CREATE TABLE IF NOT EXISTS`.

@@ -1,0 +1,8 @@
+flowchart LR
+    DEV[Developer] -->|pull request| GIT[(Git: migrations, PL/SQL, tests)]
+    GIT --> CI[CI: lint, build ephemeral DB,<br>migrate, utPLSQL]
+    CI --> ST[Staging: production-size clone<br>lock and plan checks]
+    ST --> AP{Approval}
+    AP --> PR[Production: restore point,<br>migrate, verify]
+    PR --> OBS[Post-deploy checks<br>and monitoring]
+    PR -.drift detection.-> GIT

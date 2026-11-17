@@ -1,0 +1,19 @@
+flowchart TB
+    APP[Application tier<br>connects to role-based services] --> P
+    APP -.reports: fm_ro.-> S
+    subgraph R1[Region 1]
+        subgraph Z1[Zone 1]
+            P[(fm_prd<br>PRIMARY)]
+        end
+        subgraph Z2[Zone 2]
+            S[(fm_sby<br>physical standby<br>read-only + backups)]
+        end
+        P -->|redo SYNC| S
+    end
+    subgraph R2[Region 2]
+        D[(fm_dr<br>physical standby)]
+    end
+    P -->|redo ASYNC| D
+    O[Observer<br>third location] -.-> P
+    O -.-> S
+    S -->|RMAN| B[(Backups)]
