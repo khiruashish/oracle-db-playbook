@@ -3,6 +3,7 @@ site_description: >-
   A sequential, zero-to-architect study path for Oracle Database (19c to 26ai):
   relational theory, SQL, PL/SQL, architecture, performance, HA/DR, security and
   the complete FreshMart grocery application.
+site_url: https://khiruashish.github.io/oracle-db-playbook/
 site_author: Oracle DB Playbook contributors
 repo_url: https://github.com/khiruashish/oracle-db-playbook
 repo_name: khiruashish/oracle-db-playbook

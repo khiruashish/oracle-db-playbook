@@ -78,14 +78,16 @@ The last step prints `PASS`/`FAIL` lines for the figures the documentation uses.
 
 ## Deploy
 
-Any static host works: publish the `site/` directory. For GitHub Pages:
+The site is published to GitHub Pages by the `Docs` workflow
+(`.github/workflows/docs.yml`): every push to `main` runs the checks, builds
+the site and deploys it to <https://khiruashish.github.io/oracle-db-playbook/>.
+The workflow can also be started by hand from the Actions tab.
 
-```bash
-mkdocs gh-deploy --strict
-```
+One-time repository setting: **Settings → Pages → Build and deployment →
+Source: GitHub Actions**. Until that is set, the deploy job fails and the build
+job still passes.
 
-That command builds the site and pushes it to the `gh-pages` branch of the
-`origin` remote.
+Any other static host works too: publish the `site/` directory.
 
 ## Tooling notes
 
