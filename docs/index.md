@@ -14,19 +14,75 @@ example uses the same application: **FreshMart**, an online grocery store.
 
 ## How the playbook is organized
 
-| Stage | Audience | What you can do at the end | Chapters |
-|---|---|---|---|
-| [1 · Foundations](getting-started/stage-1.md) | New to databases | Design a small schema, write CRUD SQL, joins and constraints | 1.1 to 1.11 |
-| [2 · Developer](getting-started/stage-2.md) | About 5 years | Write analytic SQL and PL/SQL, design indexes, read plans | 2.1 to 2.15 |
-| [3 · Senior DBA](getting-started/stage-3.md) | About 10 years | Run, back up, secure, tune and keep a database available | 3.1 to 3.9 |
-| [4 · Principal](getting-started/stage-4.md) | About 15 years | Design HA/DR, replication, integration and delivery pipelines | 4.1 to 4.9 |
-| [5 · Architect](getting-started/stage-5.md) | About 20 years | Choose platforms, set strategy, govern a database estate | 5.1 to 5.3 |
+<div class="grid cards stage-cards" markdown>
+
+-   :material-numeric-1-circle:{ .lg } **[Foundations](getting-started/stage-1.md)**
+
+    ---
+
+    *New to databases.* Design a small schema, write CRUD SQL, joins and constraints.
+
+    Chapters 1.1 to 1.11
+
+-   :material-numeric-2-circle:{ .lg } **[Developer](getting-started/stage-2.md)**
+
+    ---
+
+    *About 5 years.* Write analytic SQL and PL/SQL, design indexes, read plans.
+
+    Chapters 2.1 to 2.15
+
+-   :material-numeric-3-circle:{ .lg } **[Senior DBA](getting-started/stage-3.md)**
+
+    ---
+
+    *About 10 years.* Run, back up, secure, tune and keep a database available.
+
+    Chapters 3.1 to 3.9
+
+-   :material-numeric-4-circle:{ .lg } **[Principal](getting-started/stage-4.md)**
+
+    ---
+
+    *About 15 years.* Design HA/DR, replication, integration and delivery pipelines.
+
+    Chapters 4.1 to 4.9
+
+-   :material-numeric-5-circle:{ .lg } **[Architect](getting-started/stage-5.md)**
+
+    ---
+
+    *About 20 years.* Choose platforms, set strategy, govern a database estate.
+
+    Chapters 5.1 to 5.3
+
+</div>
 
 Alongside the stages:
 
-- **[FreshMart project](grocery-application/index.md)**: requirements, ER model, full schema, 20 business queries, scaling from 10K to 10M customers, production architecture.
-- **[Operations](production-runbooks/index.md)**: DBA runbooks, twelve worked performance incidents, production standards with DO / DON'T tables.
-- **[Practice](hands-on-labs/index.md)**: labs for every stage and interview question banks for five experience levels.
+<div class="grid cards" markdown>
+
+-   :material-cart-outline:{ .lg } **[FreshMart project](grocery-application/index.md)**
+
+    ---
+
+    Requirements, ER model, full schema, 20 business queries, scaling from 10K to
+    10M customers, production architecture.
+
+-   :material-wrench-outline:{ .lg } **[Operations](production-runbooks/index.md)**
+
+    ---
+
+    DBA runbooks, twelve worked performance incidents, production standards with
+    DO / DON'T tables.
+
+-   :material-school-outline:{ .lg } **[Practice](hands-on-labs/index.md)**
+
+    ---
+
+    Labs for every stage and interview question banks for five experience levels.
+
+</div>
 
 ## What is verified and what is not
 
